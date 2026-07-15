@@ -63,24 +63,31 @@ jobs:
             fi
           done <<< "$BODY"
           
-          # Fallbacks if empty
-          if [ -z "$FIXES" ]; then FIXES=$'• No bug fixes in this build.\n'; fi
-          if [ -z "$FEATURES" ]; then FEATURES=$'• No new features in this build.\n'; fi
-          if [ -z "$ASSETS" ]; then ASSETS=$'• No assets updated in this build.\n'; fi
+          # Format description with parsed content directly (avoids field length limit)
+          FULL_DESC=$'Yo bre! Update log terbaru untuk kota kesayangan kita udah mendarat. Let\'s check what\'s cookin\'! 🔥\n\n**Commit:** [\`'"$HASH"'\`]('"$COMMIT_URL"') by **'"$AUTHOR"'**\n\n'
           
-          # Format description with real newlines in bash
-          DESC=$'Yo bre! Update log terbaru untuk kota kesayangan kita udah mendarat. Let\'s check what\'s cookin\'! 🔥\n\n**Commit:** [\`'"$HASH"'\`]('"$COMMIT_URL"') by **'"$AUTHOR"'**'
+          if [ ! -z "$FEATURES" ]; then
+            FULL_DESC="${FULL_DESC}"$'### ✨ New Features & Systems\n'"$FEATURES"$'\n'
+          fi
           
-          # Construct JSON Payload using jq
+          if [ ! -z "$FIXES" ]; then
+            FULL_DESC="${FULL_DESC}"$'### 🔧 Bug Fixes & Improvements\n'"$FIXES"$'\n'
+          fi
+          
+          if [ ! -z "$ASSETS" ]; then
+            FULL_DESC="${FULL_DESC}"$'### 📦 Updated Assets\n'"$ASSETS"$'\n'
+          fi
+          
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Construct JSON Payload using jq (cleaner, safer embed structure)
           PAYLOAD=$(jq -n \
             --arg username "SuperCali Updates" \
             --arg avatar "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" \
             --arg title "🚀 SuperCali Close Beta Build Update" \
             --arg url "https://github.com/knxz-mxi/supercali-roleplay" \
-            --arg desc "$DESC" \
-            --arg fixes "$FIXES" \
-            --arg features "$FEATURES" \
-            --arg assets "$ASSETS" \
+            --arg desc "$FULL_DESC" \
+            --arg timestamp "$TIMESTAMP" \
             '{
               username: $username,
               avatar_url: $avatar,
@@ -91,28 +98,11 @@ jobs:
                   url: $url,
                   description: $desc,
                   color: 10181046,
-                  fields: [
-                    {
-                      name: "🔧 Bug Fixes & Improvements",
-                      value: $fixes,
-                      inline: false
-                    },
-                    {
-                      name: "✨ New Features & Systems",
-                      value: $features,
-                      inline: false
-                    },
-                    {
-                      name: "📦 Updated Assets",
-                      value: $assets,
-                      inline: false
-                    }
-                  ],
                   footer: {
                     text: "SuperCali Roleplay • Close Beta Version",
                     icon_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
                   },
-                  timestamp: (now | strflocaltime("%Y-%m-%dT%H:%M:%SZ"))
+                  timestamp: $timestamp
                 }
               ]
             }')
