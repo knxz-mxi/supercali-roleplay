@@ -23,14 +23,64 @@ jobs:
           BRANCH="main"
           COMMIT_URL="https://github.com/knxz-mxi/supercali-roleplay/commit/${HASH}"
           
-          DESC="[\`${HASH}\`](${COMMIT_URL}) ${BODY} - ${AUTHOR}"
+          # Initialize variables for parsing
+          FIXES=""
+          FEATURES=""
+          ASSETS=""
+          CURRENT_SECTION=""
           
+          # Parse lines
+          while IFS= read -r line; do
+            # Trim whitespace
+            trimmed=$(echo "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+            
+            if [[ "$trimmed" =~ ^[uU][pP][dD][aA][tT][eE][[:space:]]+[aA][sS][sS][eE][tT][sS]: ]]; then
+              CURRENT_SECTION="assets"
+              continue
+            elif [[ "$trimmed" =~ ^[uU][pP][dD][aA][tT][eE][[:space:]]+[lL][oO][gG][sS]: ]]; then
+              CURRENT_SECTION="logs"
+              continue
+            fi
+            
+            # Match bullet points starting with - or *
+            if [[ "$trimmed" =~ ^[-*][[:space:]]+ ]]; then
+              # Strip leading hyphen/asterisk and spaces
+              content=$(echo "$trimmed" | sed -E 's/^[-*][[:space:]]+//')
+              
+              if [[ "$CURRENT_SECTION" == "assets" ]]; then
+                ASSETS="${ASSETS}• ${content}\n"
+              else
+                if [[ "$content" =~ "\[FIX\]" ]]; then
+                  cleaned=$(echo "$content" | sed 's/\[FIX\]//g' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+                  FIXES="${FIXES}🔧 ${cleaned}\n"
+                elif [[ "$content" =~ "\[NEW\]" ]]; then
+                  cleaned=$(echo "$content" | sed 's/\[NEW\]//g' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+                  FEATURES="${FEATURES}✨ ${cleaned}\n"
+                else
+                  FIXES="${FIXES}• ${content}\n"
+                fi
+              fi
+            fi
+          done <<< "$BODY"
+          
+          # Fallbacks if empty
+          if [ -z "$FIXES" ]; then FIXES="• No bug fixes in this build.\n"; fi
+          if [ -z "$FEATURES" ]; then FEATURES="• No new features in this build.\n"; fi
+          if [ -z "$ASSETS" ]; then ASSETS="• No assets updated in this build.\n"; fi
+          
+          # Format description
+          DESC="Yo bre! Update log terbaru untuk kota kesayangan kita udah mendarat. Let's check what's cookin'! 🔥\n\n**Commit:** [\`${HASH}\`](${COMMIT_URL}) by **${AUTHOR}**"
+          
+          # Construct JSON Payload using jq
           PAYLOAD=$(jq -n \
-            --arg username "GitHub" \
+            --arg username "SuperCali Updates" \
             --arg avatar "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" \
-            --arg title "[${REPO_NAME}:${BRANCH}] 1 new commit" \
+            --arg title "🚀 SuperCali Close Beta Build Update" \
             --arg url "https://github.com/knxz-mxi/supercali-roleplay" \
             --arg desc "$DESC" \
+            --arg fixes "$(printf "$FIXES")" \
+            --arg features "$(printf "$FEATURES")" \
+            --arg assets "$(printf "$ASSETS")" \
             '{
               username: $username,
               avatar_url: $avatar,
@@ -39,7 +89,29 @@ jobs:
                   title: $title,
                   url: $url,
                   description: $desc,
-                  color: 2021160
+                  color: 10181046,
+                  fields: [
+                    {
+                      name: "🔧 Bug Fixes & Improvements",
+                      value: $fixes,
+                      inline: false
+                    },
+                    {
+                      name: "✨ New Features & Systems",
+                      value: $features,
+                      inline: false
+                    },
+                    {
+                      name: "📦 Updated Assets",
+                      value: $assets,
+                      inline: false
+                    }
+                  ],
+                  footer: {
+                    text: "SuperCali Roleplay • Close Beta Version",
+                    icon_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                  },
+                  timestamp: (now | strflocaltime("%Y-%m-%dT%H:%M:%SZ"))
                 }
               ]
             }')

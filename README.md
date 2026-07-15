@@ -25,3 +25,6 @@ Lets go, SuperCali is getting closer to launch! 🔥
 
 
 <!-- Push for GitHub App Embed Format -->
+
+
+<!-- Push for Advanced Visual Upgrade -->
