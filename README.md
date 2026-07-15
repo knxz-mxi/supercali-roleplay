@@ -34,3 +34,6 @@ Lets go, SuperCali is getting closer to launch! 🔥
 
 
 <!-- Push for Massive Cumulative Changelog -->
+
+
+<!-- Push for JQ argument fix -->

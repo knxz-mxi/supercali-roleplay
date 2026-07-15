@@ -78,9 +78,9 @@ jobs:
             --arg title "🚀 SuperCali Close Beta Build Update" \
             --arg url "https://github.com/knxz-mxi/supercali-roleplay" \
             --arg desc "$DESC" \
-            --arg fixes "$(printf "$FIXES")" \
-            --arg features "$(printf "$FEATURES")" \
-            --arg assets "$(printf "$ASSETS")" \
+            --arg fixes "$FIXES" \
+            --arg features "$FEATURES" \
+            --arg assets "$ASSETS" \
             '{
               username: $username,
               avatar_url: $avatar,
