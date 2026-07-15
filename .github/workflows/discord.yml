@@ -48,30 +48,30 @@ jobs:
               content=$(echo "$trimmed" | sed -E 's/^[-*][[:space:]]+//')
               
               if [[ "$CURRENT_SECTION" == "assets" ]]; then
-                ASSETS="${ASSETS}• ${content}\n"
+                ASSETS+=$'• '"$content"$'\n'
               else
                 if [[ "$content" =~ "\[FIX\]" ]]; then
                   cleaned=$(echo "$content" | sed 's/\[FIX\]//g' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-                  FIXES="${FIXES}🔧 ${cleaned}\n"
+                  FIXES+=$'🔧 '"$cleaned"$'\n'
                 elif [[ "$content" =~ "\[NEW\]" ]]; then
                   cleaned=$(echo "$content" | sed 's/\[NEW\]//g' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-                  FEATURES="${FEATURES}✨ ${cleaned}\n"
+                  FEATURES+=$'✨ '"$cleaned"$'\n'
                 else
-                  FIXES="${FIXES}• ${content}\n"
+                  FIXES+=$'• '"$content"$'\n'
                 fi
               fi
             fi
           done <<< "$BODY"
           
           # Fallbacks if empty
-          if [ -z "$FIXES" ]; then FIXES="• No bug fixes in this build.\n"; fi
-          if [ -z "$FEATURES" ]; then FEATURES="• No new features in this build.\n"; fi
-          if [ -z "$ASSETS" ]; then ASSETS="• No assets updated in this build.\n"; fi
+          if [ -z "$FIXES" ]; then FIXES=$'• No bug fixes in this build.\n'; fi
+          if [ -z "$FEATURES" ]; then FEATURES=$'• No new features in this build.\n'; fi
+          if [ -z "$ASSETS" ]; then ASSETS=$'• No assets updated in this build.\n'; fi
           
-          # Format description
-          DESC="Yo bre! Update log terbaru untuk kota kesayangan kita udah mendarat. Let's check what's cookin'! 🔥\n\n**Commit:** [\`${HASH}\`](${COMMIT_URL}) by **${AUTHOR}**"
+          # Format description with real newlines in bash
+          DESC=$'Yo bre! Update log terbaru untuk kota kesayangan kita udah mendarat. Let\'s check what\'s cookin\'! 🔥\n\n**Commit:** [\`'"$HASH"'\`]('"$COMMIT_URL"') by **'"$AUTHOR"'**'
           
-          # Construct JSON Payload using jq with @everyone content ping
+          # Construct JSON Payload using jq
           PAYLOAD=$(jq -n \
             --arg username "SuperCali Updates" \
             --arg avatar "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" \
