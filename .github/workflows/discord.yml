@@ -71,7 +71,7 @@ jobs:
           # Format description
           DESC="Yo bre! Update log terbaru untuk kota kesayangan kita udah mendarat. Let's check what's cookin'! 🔥\n\n**Commit:** [\`${HASH}\`](${COMMIT_URL}) by **${AUTHOR}**"
           
-          # Construct JSON Payload using jq
+          # Construct JSON Payload using jq with @everyone content ping
           PAYLOAD=$(jq -n \
             --arg username "SuperCali Updates" \
             --arg avatar "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" \
@@ -84,6 +84,7 @@ jobs:
             '{
               username: $username,
               avatar_url: $avatar,
+              content: "@everyone",
               embeds: [
                 {
                   title: $title,
