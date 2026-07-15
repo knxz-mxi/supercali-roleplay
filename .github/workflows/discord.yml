@@ -1,0 +1,20 @@
+name: Discord Announcement
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Send to Discord
+        run: |
+          WEBHOOK_URL="https://discord.com/api/webhooks/1526743701668237373/fCA8L4M3d-eFCuRrqeJ6TQS3VgwLbABtEYQ-RXc4r23PZvUTjzXbZMIZyNfgar2mDZzK"
+          BODY=$(git log -1 --pretty=format:"%B")
+          PAYLOAD=$(jq -n --arg content "$BODY" '{content: $content}')
+          curl -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$WEBHOOK_URL"
