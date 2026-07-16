@@ -24,10 +24,11 @@ jobs:
           COMMIT_URL="https://github.com/knxz-mxi/supercali-roleplay/commit/${HASH}"
           
           # Initialize variables for parsing
+          INTRO=""
           FIXES=""
           FEATURES=""
           ASSETS=""
-          CURRENT_SECTION=""
+          CURRENT_SECTION="intro"
           
           # Parse lines
           while IFS= read -r line; do
@@ -42,8 +43,11 @@ jobs:
               continue
             fi
             
+            if [[ "$CURRENT_SECTION" == "intro" ]]; then
+              # Allow markdown/text for the introduction header
+              INTRO+="$line"$'\n'
             # Match bullet points starting with - or *
-            if [[ "$trimmed" =~ ^[-*][[:space:]]+ ]]; then
+            elif [[ "$trimmed" =~ ^[-*][[:space:]]+ ]]; then
               # Strip leading hyphen/asterisk and spaces
               content=$(echo "$trimmed" | sed -E 's/^[-*][[:space:]]+//')
               
@@ -64,7 +68,13 @@ jobs:
           done <<< "$BODY"
           
           # Format description with parsed content directly (avoids field length limit)
-          FULL_DESC=$'Yo bre! Update log terbaru untuk kota kesayangan kita udah mendarat. Let\'s check what\'s cookin\'! 🔥\n\n**Commit:** [\`'"$HASH"'\`]('"$COMMIT_URL"') by **'"$AUTHOR"'**\n\n'
+          if [ ! -z "$INTRO" ] && [ "$(echo "$INTRO" | tr -d '[:space:]')" != "" ]; then
+            FULL_DESC="$INTRO"$'\n'
+          else
+            FULL_DESC=$'Yo bre! Update log terbaru untuk kota kesayangan kita udah mendarat. Let\'s check what\'s cookin\'! 🔥\n\n'
+          fi
+          
+          FULL_DESC+=$'**Commit:** [\`'"$HASH"'\`]('"$COMMIT_URL"') by **'"$AUTHOR"'**\n\n'
           
           if [ ! -z "$FEATURES" ]; then
             FULL_DESC="${FULL_DESC}"$'### ✨ New Features & Systems\n'"$FEATURES"$'\n'
