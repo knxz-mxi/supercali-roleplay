@@ -49,3 +49,6 @@ Lets go, SuperCali is getting closer to launch! 🔥
 
 
 <!-- Push for Sentinental Anti-Cheat Announcement -->
+
+
+<!-- Push for Release Version 1.0.0 Announcement -->
