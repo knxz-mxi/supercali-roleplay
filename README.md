@@ -54,3 +54,4 @@ Lets go, SuperCali is getting closer to launch! 🔥
 <!-- Push for Release Version 1.0.0 Announcement -->
 <!-- Push for exact user text version -->
 <!-- Push Open Beta Public Release -->
+<!-- Push Release Version Open Beta Public Final -->
